@@ -1,5 +1,8 @@
 package io.dama.par.hoh;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class ThreadsafeLinkedNewList<T> implements NewList<T> {
     private class ListElement<T> {
         private T                    element;
@@ -21,13 +24,26 @@ public class ThreadsafeLinkedNewList<T> implements NewList<T> {
     }
 
     @Override
-    public synchronized T get(final int i) {
+    public T get(final int i) {
         int j = 0;
         ListElement<T> ptr = this.first;
+        
+        Lock currentLock = ptr.lock;
+        Lock nextLock;        
+
+    	currentLock.lock();
         while (j++ < i) {
+        	nextLock = ptr.next.lock;
+        	nextLock.lock();
+        	
             ptr = ptr.next;
+            
+            currentLock.unlock();
+            currentLock = nextLock;
         }
-        return ptr.element;
+        T returnValue =  ptr.element;
+        currentLock.unlock();
+        return returnValue;
     }
 
     @Override
