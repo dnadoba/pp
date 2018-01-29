@@ -2,7 +2,7 @@ package io.dama.par.mem.synch;
 
 public class MemoryBarrierTest extends Thread {
 
-    public boolean stopped = false;
+    public volatile boolean stopped = false;
 
     @Override
     public void run() {
